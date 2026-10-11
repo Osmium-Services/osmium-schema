@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Osmium\Services\Schema\Controllers;
 
 use Osmium\Modules\Admin\Core\AdminController;
+use Osmium\Services\Geocoder\Models\PostcodeGeocoder;
 use Osmium\Services\Schema\Models\SchemaBuilder;
 use Osmium\Services\Schema\Models\SchemaConfig;
 
@@ -48,7 +49,7 @@ class SchemaController extends AdminController
         $typeValid = \in_array($type, SchemaBuilder::TYPES, true);
         if (!$typeValid) $errors[] = 'Unknown type - kept the previous one.';
 
-        $geo = $this->readGeo(errors: $errors, current: $current['geo']);
+        $geo = $this->readGeo(errors: $errors, current: $current['geo'], postcode: $this->text('postcode'));
 
         $config = [
             'type' => $typeValid ? $type : $current['type'],
@@ -101,13 +102,13 @@ class SchemaController extends AdminController
         return $current;
     }
 
-    private function readGeo(array &$errors, array $current): array
+    private function readGeo(array &$errors, array $current, string $postcode): array
     {
         $latitude = $this->text('latitude');
         $longitude = $this->text('longitude');
 
         $bothEmpty = $latitude === '' && $longitude === '';
-        if ($bothEmpty) return ['latitude' => '', 'longitude' => ''];
+        if ($bothEmpty) return $this->geocodePostcode(postcode: $postcode, errors: $errors);
 
         $inRange = \is_numeric($latitude) && \is_numeric($longitude)
             && \abs((float) $latitude) <= 90 && \abs((float) $longitude) <= 180;
@@ -115,6 +116,22 @@ class SchemaController extends AdminController
 
         $errors[] = 'Latitude and longitude must both be numbers in range - kept the previous values.';
         return $current;
+    }
+
+    /**
+     * Typed coordinates always win; this only runs when both boxes are empty.
+     */
+    private function geocodePostcode(string $postcode, array &$errors): array
+    {
+        $empty = ['latitude' => '', 'longitude' => ''];
+        $noPostcode = $postcode === '';
+        if ($noPostcode) return $empty;
+
+        $found = (new PostcodeGeocoder())->geocode($postcode);
+        if ($found) return ['latitude' => (string) $found['latitude'], 'longitude' => (string) $found['longitude']];
+
+        $errors[] = "Could not look up coordinates for \"{$postcode}\" - enter latitude and longitude by hand.";
+        return $empty;
     }
 
     private function readHours(array &$errors, array $current): array

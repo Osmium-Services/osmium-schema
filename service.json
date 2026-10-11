@@ -1,8 +1,8 @@
 {
     "id": "schema",
     "name": "Schema",
-    "version": "0.1.0",
-    "description": "Site-wide structured data: Organization or LocalBusiness (address, geo, opening hours, contact point) and WebSite, as JSON-LD with fixed @ids other services can reference",
+    "version": "0.2.0",
+    "description": "Site-wide structured data: Organization or LocalBusiness (address, opening hours, contact point, and geo looked up from the postcode) and WebSite, as JSON-LD with fixed @ids other services can reference",
     "category": "marketing-analytics",
     "author": {
         "name": "Gavin Cox"
@@ -12,7 +12,7 @@
     "requires": {
         "osmium": ">=1.0.0",
         "php": ">=8.1",
-        "services": []
+        "services": ["geocoder"]
     },
 
     "autoload": [
