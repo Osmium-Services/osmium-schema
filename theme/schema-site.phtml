@@ -1,0 +1,10 @@
+<?php // Included via ServiceThemeBlocks::render('head', [...]) by a theme's <head> template.
+// Prints the site-wide Organization/LocalBusiness + WebSite JSON-LD. Nothing when no name is saved.
+// JSON-LD is data, not script, so it needs no CSP nonce. Printed on every environment.
+use Osmium\Services\Schema\Models\SchemaBuilder;
+use Osmium\Services\Schema\Models\SchemaConfig;
+
+$isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+$requestUrl = ($isHttps ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+
+echo SchemaBuilder::script(config: SchemaConfig::get(), fallbackUrl: $requestUrl) . "\n";

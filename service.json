@@ -1,0 +1,58 @@
+{
+    "id": "schema",
+    "name": "Schema",
+    "version": "0.1.0",
+    "description": "Site-wide structured data: Organization or LocalBusiness (address, geo, opening hours, contact point) and WebSite, as JSON-LD with fixed @ids other services can reference",
+    "category": "marketing-analytics",
+    "author": {
+        "name": "Gavin Cox"
+    },
+    "license": "proprietary",
+
+    "requires": {
+        "osmium": ">=1.0.0",
+        "php": ">=8.1",
+        "services": []
+    },
+
+    "autoload": [
+        "models"
+    ],
+
+    "admin": {
+        "menu": {
+            "section": "Content",
+            "items": [
+                {
+                    "id": "schema",
+                    "label": "Schema",
+                    "icon": "bx bx-code-curly",
+                    "route": "admin/settings/schema",
+                    "activePattern": "admin/settings/schema",
+                    "role": null
+                }
+            ]
+        },
+        "routes": {
+            "admin/settings/schema": {
+                "controller": "controllers/SchemaController.php",
+                "class": "Osmium\\Services\\Schema\\Controllers\\SchemaController",
+                "method": "index",
+                "title": "Schema"
+            }
+        }
+    },
+
+    "frontend": {
+        "themeBlocks": [
+            {
+                "hook": "head",
+                "file": "theme/schema-site.phtml"
+            }
+        ]
+    },
+
+    "setup": {
+        "postInstallNote": "Prints nothing until a name is saved on Content > Schema. The 'head' hook is printed by a theme's <head> template via ServiceThemeBlocks::render('head', [...]). Other services can reference the organisation by its @id: <site URL>/#organization (and <site URL>/#website)."
+    }
+}

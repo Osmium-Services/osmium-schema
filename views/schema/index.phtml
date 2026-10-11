@@ -1,0 +1,151 @@
+<?php $c = $admin['config']['schema']; $e = static fn($v) => \htmlspecialchars((string) $v); ?>
+<div class="d-flex justify-content-between align-items-center py-3 mb-4">
+    <h4 class="mb-0">
+        <span class="text-muted fw-light">Services /</span> Schema
+    </h4>
+    <button type="submit" form="settings-form" class="btn btn-primary">
+        <i class="bx bx-save me-1"></i> Save Settings
+    </button>
+</div>
+
+<?php if ($admin['settingsSaved']): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Settings saved.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<?php if ($admin['settingsError'] ?? false): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <?= $e($admin['settingsError']) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<form method="POST" action="<?= $admin['basePath'] ?>settings/schema/" id="settings-form">
+    <input type="hidden" name="token" value="<?= $template['formToken'] ?? '' ?>">
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0"><i class="bx bx-building me-2"></i>Organisation</h5></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="type" class="form-label fw-semibold">Type</label>
+                        <select class="form-select" id="type" name="type">
+                            <?php foreach ($admin['types'] as $type): ?>
+                                <option value="<?= $e($type) ?>" <?= $c['type'] === $type ? 'selected' : '' ?>><?= $e($type) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="form-text">Organization for a company with no premises. The others are LocalBusiness types and also print geo and opening hours.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label fw-semibold">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="<?= $e($c['name']) ?>">
+                        <div class="form-text">Nothing is printed until a name is saved.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="legal_name" class="form-label fw-semibold">Legal name</label>
+                        <input type="text" class="form-control" id="legal_name" name="legal_name" value="<?= $e($c['legalName']) ?>">
+                    </div>
+                    <div class="mb-3">
+                        <label for="url" class="form-label fw-semibold">Site URL</label>
+                        <input type="text" class="form-control" id="url" name="url" value="<?= $e($c['url']) ?>" placeholder="https://example.com">
+                        <div class="form-text">Leave empty to use the address the visitor is on. The @ids are built from this, so change it only if the domain changes.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="logo" class="form-label fw-semibold">Logo</label>
+                        <input type="text" class="form-control" id="logo" name="logo" value="<?= $e($c['logo']) ?>" placeholder="/assets/images/logo/logo.png">
+                        <div class="form-text">Full URL or a path starting with /. Google prefers PNG, JPG or WebP over SVG.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-semibold">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"><?= $e($c['description']) ?></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="price_range" class="form-label fw-semibold">Price range</label>
+                        <input type="text" class="form-control" id="price_range" name="price_range" value="<?= $e($c['priceRange']) ?>" placeholder="££">
+                        <div class="form-text">LocalBusiness types only.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0"><i class="bx bx-phone me-2"></i>Contact and social</h5></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-semibold">Email</label>
+                        <input type="text" class="form-control" id="email" name="email" value="<?= $e($c['email']) ?>">
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label fw-semibold">Phone</label>
+                        <input type="text" class="form-control" id="phone" name="phone" value="<?= $e($c['phone']) ?>">
+                        <div class="form-text">Email and phone also print as a customer-service contact point.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="same_as" class="form-label fw-semibold">Social and profile links</label>
+                        <textarea class="form-control" id="same_as" name="same_as" rows="4"><?= $e(\implode("\n", $c['sameAs'])) ?></textarea>
+                        <div class="form-text">One full URL per line (Facebook, LinkedIn, Companies House and so on).</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0"><i class="bx bx-map me-2"></i>Address and location</h5></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="street" class="form-label fw-semibold">Street</label>
+                        <input type="text" class="form-control" id="street" name="street" value="<?= $e($c['address']['street']) ?>">
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label for="locality" class="form-label fw-semibold">Town / city</label>
+                            <input type="text" class="form-control" id="locality" name="locality" value="<?= $e($c['address']['locality']) ?>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label for="region" class="form-label fw-semibold">County</label>
+                            <input type="text" class="form-control" id="region" name="region" value="<?= $e($c['address']['region']) ?>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label for="postcode" class="form-label fw-semibold">Postcode</label>
+                            <input type="text" class="form-control" id="postcode" name="postcode" value="<?= $e($c['address']['postcode']) ?>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label for="country" class="form-label fw-semibold">Country code</label>
+                            <input type="text" class="form-control" id="country" name="country" value="<?= $e($c['address']['country']) ?>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label for="latitude" class="form-label fw-semibold">Latitude</label>
+                            <input type="text" class="form-control" id="latitude" name="latitude" value="<?= $e($c['geo']['latitude']) ?>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label for="longitude" class="form-label fw-semibold">Longitude</label>
+                            <input type="text" class="form-control" id="longitude" name="longitude" value="<?= $e($c['geo']['longitude']) ?>">
+                        </div>
+                    </div>
+                    <div class="form-text">Latitude and longitude print for LocalBusiness types only.</div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0"><i class="bx bx-time me-2"></i>Opening hours</h5></div>
+                <div class="card-body">
+                    <?php foreach ($admin['days'] as $day): $key = \strtolower($day); $row = $c['hours'][$day]; ?>
+                        <div class="row align-items-center mb-2">
+                            <div class="col-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="hours_<?= $key ?>_open" name="hours_<?= $key ?>_open" <?= $row['closed'] ? '' : 'checked' ?>>
+                                    <label class="form-check-label" for="hours_<?= $key ?>_open"><?= $e($day) ?></label>
+                                </div>
+                            </div>
+                            <div class="col-4"><input type="time" class="form-control form-control-sm" name="hours_<?= $key ?>_opens" value="<?= $e($row['opens']) ?>"></div>
+                            <div class="col-4"><input type="time" class="form-control form-control-sm" name="hours_<?= $key ?>_closes" value="<?= $e($row['closes']) ?>"></div>
+                        </div>
+                    <?php endforeach; ?>
+                    <div class="form-text">Tick the days you are open. LocalBusiness types only.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
