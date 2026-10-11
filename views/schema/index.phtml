@@ -40,8 +40,8 @@
                     </div>
                     <div class="mb-3">
                         <label for="name" class="form-label fw-semibold">Name</label>
-                        <input type="text" class="form-control" id="name" name="name" value="<?= $e($c['name']) ?>">
-                        <div class="form-text">Nothing is printed until a name is saved.</div>
+                        <input type="text" class="form-control" id="name" name="name" value="<?= $e($c['name']) ?>" placeholder="<?= $e($admin['inherited']['name']) ?>">
+                        <div class="form-text">Empty fields use the site name, Branding details and uploaded logo (shown in grey). Typed values win.</div>
                     </div>
                     <div class="mb-3">
                         <label for="legal_name" class="form-label fw-semibold">Legal name</label>
@@ -54,8 +54,8 @@
                     </div>
                     <div class="mb-3">
                         <label for="logo" class="form-label fw-semibold">Logo</label>
-                        <input type="text" class="form-control" id="logo" name="logo" value="<?= $e($c['logo']) ?>" placeholder="/assets/images/logo/logo.png">
-                        <div class="form-text">Full URL or a path starting with /. Google prefers PNG, JPG or WebP over SVG.</div>
+                        <input type="text" class="form-control" id="logo" name="logo" value="<?= $e($c['logo']) ?>" placeholder="<?= $e($admin['inherited']['logo']) ?>">
+                        <div class="form-text">Full URL or a path starting with /.</div>
                     </div>
                     <div class="mb-3">
                         <label for="description" class="form-label fw-semibold">Description</label>
@@ -74,12 +74,12 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <label for="email" class="form-label fw-semibold">Email</label>
-                        <input type="text" class="form-control" id="email" name="email" value="<?= $e($c['email']) ?>">
+                        <input type="text" class="form-control" id="email" name="email" value="<?= $e($c['email']) ?>" placeholder="<?= $e($admin['inherited']['email']) ?>">
                     </div>
                     <div class="mb-3">
                         <label for="phone" class="form-label fw-semibold">Phone</label>
-                        <input type="text" class="form-control" id="phone" name="phone" value="<?= $e($c['phone']) ?>">
-                        <div class="form-text">Email and phone also print as a customer-service contact point.</div>
+                        <input type="text" class="form-control" id="phone" name="phone" value="<?= $e($c['phone']) ?>" placeholder="<?= $e($admin['inherited']['phone']) ?>">
+                        <div class="form-text">Empty phone and email use Branding. They also print as a customer-service contact point.</div>
                     </div>
                     <div class="mb-3">
                         <label for="same_as" class="form-label fw-semibold">Social and profile links</label>

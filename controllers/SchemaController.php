@@ -25,6 +25,7 @@ class SchemaController extends AdminController
         if ($isPost) $this->handleSubmit();
 
         $this->data['admin']['config']['schema'] = SchemaConfig::get();
+        $this->data['admin']['inherited'] = $this->inheritedValues();
         $this->data['admin']['types'] = SchemaBuilder::TYPES;
         $this->data['admin']['days'] = SchemaConfig::DAYS;
         $this->data['admin']['settingsSaved'] = $_SESSION['schema_settings_saved'] ?? false;
@@ -32,6 +33,21 @@ class SchemaController extends AdminController
         unset($_SESSION['schema_settings_saved'], $_SESSION['schema_settings_error']);
 
         $this->setView('schema/index.phtml');
+    }
+
+    /**
+     * What an empty field will fall back to on the site, shown as placeholder text.
+     */
+    private function inheritedValues(): array
+    {
+        $logos = $this->admin->branding->currentLogos();
+        $logoUrl = \Osmium\Modules\Admin\Services\AdminBranding::LOGO_URL;
+        $logoFile = $logos['dark'] ?? $logos['light'] ?? null;
+
+        $site = ['name' => $this->osmium->config->site->name, 'logoDark' => $logoFile ? $logoUrl . $logoFile : ''];
+        $company = (array) ($this->osmium->config->company ?? []);
+
+        return SchemaConfig::inherited(site: $site, company: $company);
     }
 
     private function handleSubmit(): void
@@ -49,7 +65,7 @@ class SchemaController extends AdminController
         $typeValid = \in_array($type, SchemaBuilder::TYPES, true);
         if (!$typeValid) $errors[] = 'Unknown type - kept the previous one.';
 
-        $geo = $this->readGeo(errors: $errors, current: $current['geo'], postcode: $this->text('postcode'));
+        $geo = $this->readGeo(errors: $errors, current: $current['geo'], postcode: $this->text('postcode') ?: $this->companyPostcode());
 
         $config = [
             'type' => $typeValid ? $type : $current['type'],
@@ -82,6 +98,17 @@ class SchemaController extends AdminController
         $_SESSION['schema_settings_saved'] = true;
         if ($errors) $_SESSION['schema_settings_error'] = \implode(' ', $errors);
         $this->redirect('settings/schema/');
+    }
+
+    /**
+     * Only used to look up coordinates: Branding's address is one free-text box, so it is not split into fields.
+     */
+    private function companyPostcode(): string
+    {
+        $address = (string) ($this->osmium->config->company->address ?? '');
+        $found = \preg_match('/\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/i', $address, $match);
+
+        return $found ? $match[0] : '';
     }
 
     private function text(string $field): string

@@ -39,6 +39,33 @@ class SchemaConfig
         return self::$config;
     }
 
+    /**
+     * What the site already knows, used wherever Schema's own field is empty: the site name, the
+     * Branding company phone and email, and the uploaded logo. A value typed into Schema always wins.
+     *
+     * @param array $site  the theme's $site (name, logoDark, logoLight)
+     * @param array $company  Branding's company details (phone, email)
+     */
+    public static function inherited(array $site, array $company): array
+    {
+        return [
+            'name' => \trim((string) ($site['name'] ?? '')),
+            'phone' => \trim((string) ($company['phone'] ?? '')),
+            'email' => \trim((string) ($company['email'] ?? '')),
+            'logo' => (string) ($site['logoDark'] ?? $site['logoLight'] ?? ''),
+        ];
+    }
+
+    public static function withFallbacks(array $config, array $inherited): array
+    {
+        foreach ($inherited as $field => $value) {
+            $isEmpty = \trim((string) ($config[$field] ?? '')) === '';
+            if ($isEmpty) $config[$field] = $value;
+        }
+
+        return $config;
+    }
+
     public static function clearCache(): void
     {
         self::$config = null;

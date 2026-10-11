@@ -106,7 +106,8 @@ class SchemaBuilder
             if ($value !== '') $node[$property] = $value;
         }
 
-        $hasDetail = \count($node) > 1;
+        $onlyCountry = \array_keys($node) === ['@type', 'addressCountry'];
+        $hasDetail = \count($node) > 1 && !$onlyCountry;
         return $hasDetail ? $node : null;
     }
 
