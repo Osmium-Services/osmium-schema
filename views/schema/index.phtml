@@ -36,7 +36,7 @@
                                 <option value="<?= $e($type) ?>" <?= $c['type'] === $type ? 'selected' : '' ?>><?= $e($type) ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <div class="form-text">Organization for a company with no premises. The others are LocalBusiness types and also print geo and opening hours.</div>
+                        <div class="form-text">Organization for a company with no premises. The others are LocalBusiness types, which also include location and opening hours.</div>
                     </div>
                     <div class="mb-3">
                         <label for="name" class="form-label fw-semibold">Name</label>
@@ -79,7 +79,7 @@
                     <div class="mb-3">
                         <label for="phone" class="form-label fw-semibold">Phone</label>
                         <input type="text" class="form-control" id="phone" name="phone" value="<?= $e($c['phone']) ?>" placeholder="<?= $e($admin['inherited']['phone']) ?>">
-                        <div class="form-text">Empty phone and email use Branding. They also print as a customer-service contact point.</div>
+                        <div class="form-text">Empty phone and email use Branding. They are also added as a customer-service contact point.</div>
                     </div>
                     <div class="mb-3">
                         <label for="same_as" class="form-label fw-semibold">Social and profile links</label>
@@ -124,7 +124,7 @@
                             <input type="text" class="form-control" id="longitude" name="longitude" value="<?= $e($c['geo']['longitude']) ?>">
                         </div>
                     </div>
-                    <div class="form-text">Leave latitude and longitude empty and they are looked up from the postcode on save (UK postcodes). Coordinates you type are kept. They print for LocalBusiness types only.</div>
+                    <div class="form-text">Leave latitude and longitude empty and they are looked up from the postcode on save (UK postcodes). Coordinates you type are kept. They only apply to LocalBusiness types.</div>
                 </div>
             </div>
 
