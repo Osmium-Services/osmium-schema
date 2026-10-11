@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Osmium\Services\Schema\Controllers;
 
+use Osmium\Core\Library\ServiceLoader;
+use Osmium\Core\Models\ServiceModel;
 use Osmium\Modules\Admin\Core\AdminController;
 use Osmium\Services\Geocoder\Models\PostcodeGeocoder;
 use Osmium\Services\Schema\Models\SchemaBuilder;
@@ -47,7 +49,9 @@ class SchemaController extends AdminController
         $site = ['name' => $this->osmium->config->site->name, 'logoDark' => $logoFile ? $logoUrl . $logoFile : ''];
         $company = (array) ($this->osmium->config->company ?? []);
 
-        return SchemaConfig::inherited(site: $site, company: $company);
+        $context = (new ServiceLoader(new ServiceModel($this->osmium->dataSource)))->serviceConfigContext();
+
+        return SchemaConfig::inherited(site: $site, company: $company, socialLinks: $context['socialLinks'] ?? []);
     }
 
     private function handleSubmit(): void

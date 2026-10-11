@@ -45,21 +45,27 @@ class SchemaConfig
      *
      * @param array $site  the theme's $site (name, logoDark, logoLight)
      * @param array $company  Branding's company details (phone, email)
+     * @param array $socialLinks  the Social Links service's config as core passes it to theme blocks (empty when
+     *   that service is not installed): ['links' => network => URL]
      */
-    public static function inherited(array $site, array $company): array
+    public static function inherited(array $site, array $company, array $socialLinks = []): array
     {
+        $profileLinks = \array_values(\array_filter(\array_map('trim', (array) ($socialLinks['links'] ?? []))));
+
         return [
             'name' => \trim((string) ($site['name'] ?? '')),
             'phone' => \trim((string) ($company['phone'] ?? '')),
             'email' => \trim((string) ($company['email'] ?? '')),
             'logo' => (string) ($site['logoDark'] ?? $site['logoLight'] ?? ''),
+            'sameAs' => $profileLinks,
         ];
     }
 
     public static function withFallbacks(array $config, array $inherited): array
     {
         foreach ($inherited as $field => $value) {
-            $isEmpty = \trim((string) ($config[$field] ?? '')) === '';
+            $current = $config[$field] ?? '';
+            $isEmpty = \is_array($current) ? !$current : \trim((string) $current) === '';
             if ($isEmpty) $config[$field] = $value;
         }
 

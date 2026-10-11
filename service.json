@@ -1,7 +1,7 @@
 {
     "id": "schema",
     "name": "Schema",
-    "version": "0.3.1",
+    "version": "0.4.0",
     "description": "Site-wide structured data: Organization or LocalBusiness (address, opening hours, contact point, and geo looked up from the postcode) and WebSite, as JSON-LD with fixed @ids other services can reference",
     "category": "marketing-analytics",
     "author": {

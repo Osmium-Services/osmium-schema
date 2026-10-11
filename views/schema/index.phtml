@@ -83,8 +83,8 @@
                     </div>
                     <div class="mb-3">
                         <label for="same_as" class="form-label fw-semibold">Social and profile links</label>
-                        <textarea class="form-control" id="same_as" name="same_as" rows="4"><?= $e(\implode("\n", $c['sameAs'])) ?></textarea>
-                        <div class="form-text">One full URL per line (Facebook, LinkedIn, Companies House and so on).</div>
+                        <textarea class="form-control" id="same_as" name="same_as" rows="4" placeholder="<?= $e(\implode("\n", $admin['inherited']['sameAs'])) ?>"><?= $e(\implode("\n", $c['sameAs'])) ?></textarea>
+                        <div class="form-text">One full URL per line (Facebook, LinkedIn, Companies House and so on). Empty uses the Social Links service when it is installed (shown in grey).</div>
                     </div>
                 </div>
             </div>
