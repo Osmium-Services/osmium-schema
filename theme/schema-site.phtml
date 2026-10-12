@@ -8,7 +8,7 @@ use Osmium\Services\Schema\Models\SchemaConfig;
 $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
 $requestUrl = ($isHttps ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 
-$inherited = SchemaConfig::inherited(site: $site ?? [], company: $company ?? [], socialLinks: $socialLinks ?? []);
+$inherited = SchemaConfig::inherited(site: $site ?? [], company: $company ?? [], socialLinks: $osmiumSocialLinks ?? []);
 $config = SchemaConfig::withFallbacks(config: SchemaConfig::get(), inherited: $inherited);
 
 echo SchemaBuilder::script(config: $config, fallbackUrl: $requestUrl) . "\n";

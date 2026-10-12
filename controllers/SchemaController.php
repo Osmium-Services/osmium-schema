@@ -51,7 +51,7 @@ class SchemaController extends AdminController
 
         $context = (new ServiceLoader(new ServiceModel($this->osmium->dataSource)))->serviceConfigContext();
 
-        return SchemaConfig::inherited(site: $site, company: $company, socialLinks: $context['socialLinks'] ?? []);
+        return SchemaConfig::inherited(site: $site, company: $company, socialLinks: $context['osmiumSocialLinks'] ?? []);
     }
 
     private function handleSubmit(): void
