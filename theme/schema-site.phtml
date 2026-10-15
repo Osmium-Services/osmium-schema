@@ -5,8 +5,11 @@
 use Osmium\Services\Schema\Models\SchemaBuilder;
 use Osmium\Services\Schema\Models\SchemaConfig;
 
+// The site's own address (it carries the configured scheme, so it stays https behind a proxy); the request is only the last resort.
 $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
 $requestUrl = ($isHttps ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+$siteUrl = $site['FQDN'] ?? '';
+$requestUrl = $siteUrl !== '' ? $siteUrl : $requestUrl;
 
 $inherited = SchemaConfig::inherited(site: $site ?? [], company: $company ?? [], socialLinks: $osmiumSocialLinks ?? []);
 $config = SchemaConfig::withFallbacks(config: SchemaConfig::get(), inherited: $inherited);
