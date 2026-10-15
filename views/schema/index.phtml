@@ -49,7 +49,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="url" class="form-label fw-semibold">Site URL</label>
-                        <input type="text" class="form-control" id="url" name="url" value="<?= $e($c['url']) ?>" placeholder="https://example.com">
+                        <input type="text" class="form-control" id="url" name="url" value="<?= $e($c['url']) ?>" placeholder="<?= $e($admin['inherited']['url']) ?>">
                         <div class="form-text">Leave empty to use the address the visitor is on. The @ids are built from this, so change it only if the domain changes.</div>
                     </div>
                     <div class="mb-3">
