@@ -1,7 +1,7 @@
 {
     "id": "schema",
     "name": "Schema",
-    "version": "0.4.4",
+    "version": "0.4.5",
     "description": "Site-wide structured data: Organization or LocalBusiness (address, opening hours, contact point, and geo looked up from the postcode) and WebSite, as JSON-LD with fixed @ids other services can reference",
     "category": "marketing-analytics",
     "author": {
@@ -25,7 +25,7 @@
             "items": [
                 {
                     "id": "schema",
-                    "label": "Schema",
+                    "label": "Osmium Schema",
                     "icon": "bx bx-code-curly",
                     "route": "admin/settings/schema",
                     "activePattern": "admin/settings/schema",
