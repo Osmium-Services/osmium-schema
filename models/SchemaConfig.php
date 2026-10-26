@@ -71,7 +71,7 @@ class SchemaConfig
         $detail = \trim($fields['street'] . $fields['locality'] . $fields['region'] . $fields['postcode']);
         if ($detail === '') return [];
 
-        $country = $fields['country'] !== '' ? $fields['country'] : 'GB';
+        $country = CountryCodes::fromName($fields['country']);
         return ['street' => $fields['street'], 'locality' => $fields['locality'], 'region' => $fields['region'], 'postcode' => $fields['postcode'], 'country' => $country];
     }
 
