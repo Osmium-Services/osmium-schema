@@ -33,7 +33,7 @@ class SchemaConfig
 
         $decoded = \json_decode(\substr(string: $content, offset: $jsonStart), associative: true);
         $saved = \is_array($decoded) ? ($decoded['schema'] ?? []) : [];
-        if (\is_array($saved)) unset($saved['hours'], $saved['address']); // Opening hours and the address now come from the company's Location settings
+        if (\is_array($saved)) unset($saved['hours'], $saved['address'], $saved['geo']); // Opening hours, the address and coordinates now come from the company's Location settings
 
         self::$config = \array_replace_recursive(self::$config, \is_array($saved) ? $saved : []);
 
@@ -150,7 +150,6 @@ class SchemaConfig
             'email' => '',
             'phone' => '',
             'priceRange' => '',
-            'geo' => [], // Only a looked-up cache: coordinates typed on Company > Location win
             'sameAs' => [],
         ];
     }

@@ -7,7 +7,6 @@ namespace Osmium\Services\Schema\Controllers;
 use Osmium\Core\Library\ServiceLoader;
 use Osmium\Core\Models\ServiceModel;
 use Osmium\Modules\Admin\Core\AdminController;
-use Osmium\Services\Geocoder\Models\PostcodeGeocoder;
 use Osmium\Services\Schema\Models\SchemaBuilder;
 use Osmium\Services\Schema\Models\SchemaConfig;
 
@@ -71,8 +70,6 @@ class SchemaController extends AdminController
         $typeValid = \in_array($type, SchemaBuilder::TYPES, true);
         if (!$typeValid) $errors[] = 'Unknown type - kept the previous one.';
 
-        $geo = $this->lookedUpGeo(errors: $errors);
-
         $config = [
             'type' => $typeValid ? $type : $current['type'],
             'name' => $this->text('name'),
@@ -83,7 +80,6 @@ class SchemaController extends AdminController
             'email' => $this->text('email'),
             'phone' => $this->text('phone'),
             'priceRange' => $this->text('price_range'),
-            'geo' => $geo,
             'sameAs' => $this->readSameAs(errors: $errors),
         ];
 
@@ -96,29 +92,6 @@ class SchemaController extends AdminController
         $_SESSION['schema_settings_saved'] = true;
         if ($errors) $_SESSION['schema_settings_error'] = \implode(' ', $errors);
         $this->redirect('settings/schema/');
-    }
-
-    /**
-     * Coordinates are typed on Company > Location; only when none are there are they looked up from the company
-     * postcode and kept here as a cache.
-     */
-    private function lookedUpGeo(array &$errors): array
-    {
-        $location = $this->osmium->config->company->location ?? null;
-        $typed = SchemaConfig::companyGeo($location);
-        if ($typed) return [];
-
-        $postcode = SchemaConfig::companyAddress($location)['postcode'] ?? $this->postcodeFromAddress();
-        return $this->geocodePostcode(postcode: (string) $postcode, errors: $errors);
-    }
-
-    /** Sites that only have the one-line company address: the postcode is picked out of it. */
-    private function postcodeFromAddress(): string
-    {
-        $address = (string) ($this->osmium->config->company->address ?? '');
-        $found = \preg_match('/\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/i', $address, $match);
-
-        return $found ? $match[0] : '';
     }
 
     private function text(string $field): string
@@ -137,22 +110,6 @@ class SchemaController extends AdminController
 
         $errors[] = "{$label} must start with http:// or https:// - kept the previous value.";
         return $current;
-    }
-
-    /**
-     * Looks the postcode up with the Geocoder service.
-     */
-    private function geocodePostcode(string $postcode, array &$errors): array
-    {
-        $empty = [];
-        $noPostcode = $postcode === '';
-        if ($noPostcode) return $empty;
-
-        $found = (new PostcodeGeocoder())->geocode($postcode);
-        if ($found) return ['latitude' => (string) $found['latitude'], 'longitude' => (string) $found['longitude']];
-
-        $errors[] = "Could not look up coordinates for \"{$postcode}\" - enter latitude and longitude on Company > Location.";
-        return $empty;
     }
 
     private function readSameAs(array &$errors): array

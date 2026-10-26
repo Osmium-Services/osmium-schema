@@ -94,14 +94,14 @@
             <div class="card mb-4">
                 <div class="card-header"><h5 class="mb-0"><i class="bx bx-map me-2"></i>Address and location</h5></div>
                 <div class="card-body">
-                    <?php $address = $admin['inherited']['address']; $geo = $admin['inherited']['geo'] ?: $c['geo']; ?>
+                    <?php $address = $admin['inherited']['address']; $geo = $admin['inherited']['geo']; ?>
                     <p class="mb-2">The address comes from <a href="<?= $adminUrl('settings/location/') ?>">Company &gt; Location</a>.</p>
                     <?php if ($address): ?>
                         <p class="mb-2 text-muted"><?= $e(\implode(', ', \array_filter([$address['street'], $address['locality'], $address['region'], $address['postcode'], $address['country']]))) ?></p>
                     <?php else: ?>
                         <p class="mb-2 text-muted">No address saved there yet, so none is added.</p>
                     <?php endif; ?>
-                    <div class="form-text">Coordinates: <?= $geo ? $e($geo['latitude'] . ', ' . $geo['longitude']) : 'none yet' ?>. Typed on Location, or looked up from the postcode when this page is saved (UK postcodes). LocalBusiness types only.</div>
+                    <div class="form-text">Coordinates: <?= $geo ? $e($geo['latitude'] . ', ' . $geo['longitude']) : 'none yet' ?>. Set on Location (looked up from the postcode when it is saved, if the Postcode Geocoder service is installed). LocalBusiness types only.</div>
                 </div>
             </div>
 
