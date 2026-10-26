@@ -29,7 +29,6 @@ class SchemaController extends AdminController
         $this->data['admin']['config']['schema'] = SchemaConfig::get();
         $this->data['admin']['inherited'] = $this->inheritedValues();
         $this->data['admin']['types'] = SchemaBuilder::TYPES;
-        $this->data['admin']['days'] = SchemaConfig::DAYS;
         $this->data['admin']['settingsSaved'] = $_SESSION['schema_settings_saved'] ?? false;
         $this->data['admin']['settingsError'] = $_SESSION['schema_settings_error'] ?? false;
         unset($_SESSION['schema_settings_saved'], $_SESSION['schema_settings_error']);
@@ -92,7 +91,6 @@ class SchemaController extends AdminController
                 'country' => $this->text('country'),
             ],
             'geo' => $geo,
-            'hours' => $this->readHours(errors: $errors, current: $current['hours']),
             'sameAs' => $this->readSameAs(errors: $errors),
         ];
 
@@ -166,35 +164,6 @@ class SchemaController extends AdminController
 
         $errors[] = "Could not look up coordinates for \"{$postcode}\" - enter latitude and longitude by hand.";
         return $empty;
-    }
-
-    private function readHours(array &$errors, array $current): array
-    {
-        $hours = [];
-        $badTime = false;
-        foreach (SchemaConfig::DAYS as $day) {
-            $key = \strtolower($day);
-            $opens = $this->text("hours_{$key}_opens");
-            $closes = $this->text("hours_{$key}_closes");
-            $timesValid = $this->isTime($opens) && $this->isTime($closes);
-
-            if (!$timesValid) {
-                $badTime = true;
-                $hours[$day] = $current[$day];
-                continue;
-            }
-
-            $hours[$day] = ['closed' => !isset($_POST["hours_{$key}_open"]), 'opens' => $opens, 'closes' => $closes];
-        }
-
-        if ($badTime) $errors[] = 'Times must look like 09:00 - some days kept their previous hours.';
-
-        return $hours;
-    }
-
-    private function isTime(string $value): bool
-    {
-        return (bool) \preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $value);
     }
 
     private function readSameAs(array &$errors): array

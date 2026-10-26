@@ -131,19 +131,7 @@
             <div class="card mb-4">
                 <div class="card-header"><h5 class="mb-0"><i class="bx bx-time me-2"></i>Opening hours</h5></div>
                 <div class="card-body">
-                    <?php foreach ($admin['days'] as $day): $key = \strtolower($day); $row = $c['hours'][$day]; ?>
-                        <div class="row align-items-center mb-2">
-                            <div class="col-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="hours_<?= $key ?>_open" name="hours_<?= $key ?>_open" <?= $row['closed'] ? '' : 'checked' ?>>
-                                    <label class="form-check-label" for="hours_<?= $key ?>_open"><?= $e($day) ?></label>
-                                </div>
-                            </div>
-                            <div class="col-4"><input type="time" class="form-control form-control-sm" name="hours_<?= $key ?>_opens" value="<?= $e($row['opens']) ?>"></div>
-                            <div class="col-4"><input type="time" class="form-control form-control-sm" name="hours_<?= $key ?>_closes" value="<?= $e($row['closes']) ?>"></div>
-                        </div>
-                    <?php endforeach; ?>
-                    <div class="form-text">Tick the days you are open. LocalBusiness types only.</div>
+                    <p class="mb-0">Opening hours come from <a href="<?= $adminUrl('settings/location/') ?>">Company &gt; Location</a> and are added automatically for the LocalBusiness types.</p>
                 </div>
             </div>
         </div>

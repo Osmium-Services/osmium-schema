@@ -33,6 +33,7 @@ class SchemaConfig
 
         $decoded = \json_decode(\substr(string: $content, offset: $jsonStart), associative: true);
         $saved = \is_array($decoded) ? ($decoded['schema'] ?? []) : [];
+        if (\is_array($saved)) unset($saved['hours']); // Opening hours now come from the company's Location settings
 
         self::$config = \array_replace_recursive(self::$config, \is_array($saved) ? $saved : []);
 
@@ -41,7 +42,7 @@ class SchemaConfig
 
     /**
      * What the site already knows, used wherever Schema's own field is empty: the site name, the
-     * Branding company phone and email, and the uploaded logo. A value typed into Schema always wins.
+     * Branding company phone and email, the company's Location opening hours, and the uploaded logo. A value typed into Schema always wins.
      *
      * @param array $site  the theme's $site (name, logoDark, logoLight)
      * @param array $company  Branding's company details (phone, email)
@@ -57,8 +58,28 @@ class SchemaConfig
             'phone' => \trim((string) ($company['phone'] ?? '')),
             'email' => \trim((string) ($company['email'] ?? '')),
             'logo' => (string) ($site['logoDark'] ?? $site['logoLight'] ?? ''),
+            'hours' => self::companyHours($company['openingHours'] ?? null),
             'sameAs' => $profileLinks,
         ];
+    }
+
+    /**
+     * The days ticked as open in Company > Location (config company.openingHours, an object once decoded), in DAYS order.
+     * Empty when none is ticked, so nothing is printed.
+     */
+    private static function companyHours(mixed $saved): array
+    {
+        $savedDays = \json_decode(\json_encode($saved) ?: '[]', associative: true);
+        $savedDays = \is_array($savedDays) ? $savedDays : [];
+
+        $hours = [];
+        foreach (self::DAYS as $day) {
+            $row = $savedDays[$day] ?? null;
+            $isOpen = \is_array($row) && !($row['closed'] ?? true);
+            if ($isOpen) $hours[$day] = ['closed' => false, 'opens' => (string) $row['opens'], 'closes' => (string) $row['closes']];
+        }
+
+        return $hours;
     }
 
     public static function withFallbacks(array $config, array $inherited): array
@@ -79,11 +100,6 @@ class SchemaConfig
 
     public static function defaults(): array
     {
-        $hours = [];
-        foreach (self::DAYS as $day) {
-            $hours[$day] = ['closed' => true, 'opens' => '09:00', 'closes' => '17:00'];
-        }
-
         return [
             'type' => 'Organization',
             'name' => '',
@@ -96,7 +112,6 @@ class SchemaConfig
             'priceRange' => '',
             'address' => ['street' => '', 'locality' => '', 'region' => '', 'postcode' => '', 'country' => 'GB'],
             'geo' => ['latitude' => '', 'longitude' => ''],
-            'hours' => $hours,
             'sameAs' => [],
         ];
     }

@@ -76,7 +76,7 @@ class SchemaBuilder
         $geo = self::geo($config['geo']);
         if ($geo) $node['geo'] = $geo;
 
-        $hours = self::hours($config['hours']);
+        $hours = self::hours($config['hours'] ?? []);
         if ($hours) $node['openingHoursSpecification'] = $hours;
 
         return $node;
@@ -139,8 +139,8 @@ class SchemaBuilder
     {
         $specs = [];
         foreach (SchemaConfig::DAYS as $day) {
-            $row = $hours[$day] ?? [];
-            $isOpen = !($row['closed'] ?? true);
+            $row = $hours[$day] ?? null;
+            $isOpen = \is_array($row) && !($row['closed'] ?? true);
             if (!$isOpen) continue;
 
             $specs[] = [
