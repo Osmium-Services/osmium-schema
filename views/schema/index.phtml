@@ -94,37 +94,14 @@
             <div class="card mb-4">
                 <div class="card-header"><h5 class="mb-0"><i class="bx bx-map me-2"></i>Address and location</h5></div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <label for="street" class="form-label fw-semibold">Street</label>
-                        <input type="text" class="form-control" id="street" name="street" value="<?= $e($c['address']['street']) ?>">
-                    </div>
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <label for="locality" class="form-label fw-semibold">Town / city</label>
-                            <input type="text" class="form-control" id="locality" name="locality" value="<?= $e($c['address']['locality']) ?>">
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label for="region" class="form-label fw-semibold">County</label>
-                            <input type="text" class="form-control" id="region" name="region" value="<?= $e($c['address']['region']) ?>">
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label for="postcode" class="form-label fw-semibold">Postcode</label>
-                            <input type="text" class="form-control" id="postcode" name="postcode" value="<?= $e($c['address']['postcode']) ?>">
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label for="country" class="form-label fw-semibold">Country code</label>
-                            <input type="text" class="form-control" id="country" name="country" value="<?= $e($c['address']['country']) ?>">
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label for="latitude" class="form-label fw-semibold">Latitude</label>
-                            <input type="text" class="form-control" id="latitude" name="latitude" value="<?= $e($c['geo']['latitude']) ?>">
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label for="longitude" class="form-label fw-semibold">Longitude</label>
-                            <input type="text" class="form-control" id="longitude" name="longitude" value="<?= $e($c['geo']['longitude']) ?>">
-                        </div>
-                    </div>
-                    <div class="form-text">Leave latitude and longitude empty and they are looked up from the postcode on save (UK postcodes). Coordinates you type are kept. They only apply to LocalBusiness types.</div>
+                    <?php $address = $admin['inherited']['address']; $geo = $admin['inherited']['geo'] ?: $c['geo']; ?>
+                    <p class="mb-2">The address comes from <a href="<?= $adminUrl('settings/location/') ?>">Company &gt; Location</a>.</p>
+                    <?php if ($address): ?>
+                        <p class="mb-2 text-muted"><?= $e(\implode(', ', \array_filter([$address['street'], $address['locality'], $address['region'], $address['postcode'], $address['country']]))) ?></p>
+                    <?php else: ?>
+                        <p class="mb-2 text-muted">No address saved there yet, so none is added.</p>
+                    <?php endif; ?>
+                    <div class="form-text">Coordinates: <?= $geo ? $e($geo['latitude'] . ', ' . $geo['longitude']) : 'none yet' ?>. Typed on Location, or looked up from the postcode when this page is saved (UK postcodes). LocalBusiness types only.</div>
                 </div>
             </div>
 

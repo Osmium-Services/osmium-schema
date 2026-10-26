@@ -71,7 +71,7 @@ class SchemaController extends AdminController
         $typeValid = \in_array($type, SchemaBuilder::TYPES, true);
         if (!$typeValid) $errors[] = 'Unknown type - kept the previous one.';
 
-        $geo = $this->readGeo(errors: $errors, current: $current['geo'], postcode: $this->text('postcode') ?: $this->companyPostcode());
+        $geo = $this->lookedUpGeo(errors: $errors);
 
         $config = [
             'type' => $typeValid ? $type : $current['type'],
@@ -83,13 +83,6 @@ class SchemaController extends AdminController
             'email' => $this->text('email'),
             'phone' => $this->text('phone'),
             'priceRange' => $this->text('price_range'),
-            'address' => [
-                'street' => $this->text('street'),
-                'locality' => $this->text('locality'),
-                'region' => $this->text('region'),
-                'postcode' => $this->text('postcode'),
-                'country' => $this->text('country'),
-            ],
             'geo' => $geo,
             'sameAs' => $this->readSameAs(errors: $errors),
         ];
@@ -106,9 +99,21 @@ class SchemaController extends AdminController
     }
 
     /**
-     * Only used to look up coordinates: Branding's address is one free-text box, so it is not split into fields.
+     * Coordinates are typed on Company > Location; only when none are there are they looked up from the company
+     * postcode and kept here as a cache.
      */
-    private function companyPostcode(): string
+    private function lookedUpGeo(array &$errors): array
+    {
+        $location = $this->osmium->config->company->location ?? null;
+        $typed = SchemaConfig::companyGeo($location);
+        if ($typed) return [];
+
+        $postcode = SchemaConfig::companyAddress($location)['postcode'] ?? $this->postcodeFromAddress();
+        return $this->geocodePostcode(postcode: (string) $postcode, errors: $errors);
+    }
+
+    /** Sites that only have the one-line company address: the postcode is picked out of it. */
+    private function postcodeFromAddress(): string
     {
         $address = (string) ($this->osmium->config->company->address ?? '');
         $found = \preg_match('/\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/i', $address, $match);
@@ -134,35 +139,19 @@ class SchemaController extends AdminController
         return $current;
     }
 
-    private function readGeo(array &$errors, array $current, string $postcode): array
-    {
-        $latitude = $this->text('latitude');
-        $longitude = $this->text('longitude');
-
-        $bothEmpty = $latitude === '' && $longitude === '';
-        if ($bothEmpty) return $this->geocodePostcode(postcode: $postcode, errors: $errors);
-
-        $inRange = \is_numeric($latitude) && \is_numeric($longitude)
-            && \abs((float) $latitude) <= 90 && \abs((float) $longitude) <= 180;
-        if ($inRange) return ['latitude' => $latitude, 'longitude' => $longitude];
-
-        $errors[] = 'Latitude and longitude must both be numbers in range - kept the previous values.';
-        return $current;
-    }
-
     /**
-     * Typed coordinates always win; this only runs when both boxes are empty.
+     * Looks the postcode up with the Geocoder service.
      */
     private function geocodePostcode(string $postcode, array &$errors): array
     {
-        $empty = ['latitude' => '', 'longitude' => ''];
+        $empty = [];
         $noPostcode = $postcode === '';
         if ($noPostcode) return $empty;
 
         $found = (new PostcodeGeocoder())->geocode($postcode);
         if ($found) return ['latitude' => (string) $found['latitude'], 'longitude' => (string) $found['longitude']];
 
-        $errors[] = "Could not look up coordinates for \"{$postcode}\" - enter latitude and longitude by hand.";
+        $errors[] = "Could not look up coordinates for \"{$postcode}\" - enter latitude and longitude on Company > Location.";
         return $empty;
     }
 

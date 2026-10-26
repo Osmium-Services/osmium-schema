@@ -33,7 +33,7 @@ class SchemaConfig
 
         $decoded = \json_decode(\substr(string: $content, offset: $jsonStart), associative: true);
         $saved = \is_array($decoded) ? ($decoded['schema'] ?? []) : [];
-        if (\is_array($saved)) unset($saved['hours']); // Opening hours now come from the company's Location settings
+        if (\is_array($saved)) unset($saved['hours'], $saved['address']); // Opening hours and the address now come from the company's Location settings
 
         self::$config = \array_replace_recursive(self::$config, \is_array($saved) ? $saved : []);
 
@@ -59,8 +59,44 @@ class SchemaConfig
             'email' => \trim((string) ($company['email'] ?? '')),
             'logo' => (string) ($site['logoDark'] ?? $site['logoLight'] ?? ''),
             'hours' => self::companyHours($company['openingHours'] ?? null),
+            'address' => self::companyAddress($company['location'] ?? null),
+            'geo' => self::companyGeo($company['location'] ?? null),
             'sameAs' => $profileLinks,
         ];
+    }
+
+    /** The address fields from Company > Location, or [] when street, town, county and postcode are all empty. */
+    public static function companyAddress(mixed $saved): array
+    {
+        $fields = self::companyLocation($saved);
+        $detail = \trim($fields['street'] . $fields['locality'] . $fields['region'] . $fields['postcode']);
+        if ($detail === '') return [];
+
+        $country = $fields['country'] !== '' ? $fields['country'] : 'GB';
+        return ['street' => $fields['street'], 'locality' => $fields['locality'], 'region' => $fields['region'], 'postcode' => $fields['postcode'], 'country' => $country];
+    }
+
+    /** Coordinates typed on Company > Location, or [] unless both are numbers. */
+    public static function companyGeo(mixed $saved): array
+    {
+        $fields = self::companyLocation($saved);
+        $bothNumeric = \is_numeric($fields['latitude']) && \is_numeric($fields['longitude']);
+
+        return $bothNumeric ? ['latitude' => $fields['latitude'], 'longitude' => $fields['longitude']] : [];
+    }
+
+    /** @return array<string, string> */
+    private static function companyLocation(mixed $saved): array
+    {
+        $decoded = \json_decode(\json_encode($saved) ?: '[]', associative: true);
+        $decoded = \is_array($decoded) ? $decoded : [];
+
+        $fields = [];
+        foreach (['street', 'locality', 'region', 'postcode', 'country', 'latitude', 'longitude'] as $field) {
+            $fields[$field] = \trim((string) ($decoded[$field] ?? ''));
+        }
+
+        return $fields;
     }
 
     /**
@@ -82,12 +118,16 @@ class SchemaConfig
         return $hours;
     }
 
+    /** Fields the company's Location settings own: they replace whatever Schema holds whenever Location has a value. */
+    private const COMPANY_OWNED = ['hours', 'address', 'geo'];
+
     public static function withFallbacks(array $config, array $inherited): array
     {
         foreach ($inherited as $field => $value) {
             $current = $config[$field] ?? '';
             $isEmpty = \is_array($current) ? !$current : \trim((string) $current) === '';
-            if ($isEmpty) $config[$field] = $value;
+            $companyOwned = \in_array($field, self::COMPANY_OWNED, true) && $value;
+            if ($isEmpty || $companyOwned) $config[$field] = $value;
         }
 
         return $config;
@@ -110,8 +150,7 @@ class SchemaConfig
             'email' => '',
             'phone' => '',
             'priceRange' => '',
-            'address' => ['street' => '', 'locality' => '', 'region' => '', 'postcode' => '', 'country' => 'GB'],
-            'geo' => ['latitude' => '', 'longitude' => ''],
+            'geo' => [], // Only a looked-up cache: coordinates typed on Company > Location win
             'sameAs' => [],
         ];
     }

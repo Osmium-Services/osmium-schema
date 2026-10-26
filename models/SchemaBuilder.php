@@ -62,7 +62,7 @@ class SchemaBuilder
             if ($value !== '') $node[$key] = $value;
         }
 
-        $address = self::address($config['address']);
+        $address = self::address($config['address'] ?? []);
         if ($address) $node['address'] = $address;
 
         $contactPoint = self::contactPoint(config: $config);
@@ -73,7 +73,7 @@ class SchemaBuilder
 
         if (!$isLocal) return $node;
 
-        $geo = self::geo($config['geo']);
+        $geo = self::geo($config['geo'] ?? []);
         if ($geo) $node['geo'] = $geo;
 
         $hours = self::hours($config['hours'] ?? []);
