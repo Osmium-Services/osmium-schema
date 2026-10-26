@@ -13,5 +13,6 @@ $requestUrl = $siteUrl !== '' ? $siteUrl : $requestUrl;
 
 $inherited = SchemaConfig::inherited(site: $site ?? [], company: $company ?? [], socialLinks: $osmiumSocialLinks ?? []);
 $config = SchemaConfig::withFallbacks(config: SchemaConfig::get(), inherited: $inherited);
+$config = SchemaConfig::withLookedUpGeo(config: $config, company: (array) ($company ?? []));
 
 echo SchemaBuilder::script(config: $config, fallbackUrl: $requestUrl) . "\n";

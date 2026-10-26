@@ -101,7 +101,18 @@
                     <?php else: ?>
                         <p class="mb-2 text-muted">No address saved there yet, so none is added.</p>
                     <?php endif; ?>
-                    <div class="form-text">Coordinates: <?= $geo ? $e($geo['latitude'] . ', ' . $geo['longitude']) : 'none yet' ?>. Set on Location (looked up from the postcode when it is saved, if the Postcode Geocoder service is installed). LocalBusiness types only.</div>
+                    <?php $looked = \Osmium\Services\Schema\Models\SchemaConfig::numericPair($c['geoLookup']); ?>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label for="latitude" class="form-label fw-semibold">Latitude</label>
+                            <input type="text" class="form-control" id="latitude" name="latitude" value="<?= $e($c['geo']['latitude'] ?? '') ?>" placeholder="<?= $e($looked['latitude'] ?? '') ?>">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label for="longitude" class="form-label fw-semibold">Longitude</label>
+                            <input type="text" class="form-control" id="longitude" name="longitude" value="<?= $e($c['geo']['longitude'] ?? '') ?>" placeholder="<?= $e($looked['longitude'] ?? '') ?>">
+                        </div>
+                    </div>
+                    <div class="form-text">Leave latitude and longitude empty and they are looked up from the Location postcode (UK postcodes, shown in grey). Coordinates you type are kept. LocalBusiness types only.</div>
                 </div>
             </div>
 

@@ -33,7 +33,7 @@ class SchemaConfig
 
         $decoded = \json_decode(\substr(string: $content, offset: $jsonStart), associative: true);
         $saved = \is_array($decoded) ? ($decoded['schema'] ?? []) : [];
-        if (\is_array($saved)) unset($saved['hours'], $saved['address'], $saved['geo']); // Opening hours, the address and coordinates now come from the company's Location settings
+        if (\is_array($saved)) unset($saved['hours'], $saved['address']); // Opening hours and the address come from the company's Location settings
 
         self::$config = \array_replace_recursive(self::$config, \is_array($saved) ? $saved : []);
 
@@ -60,7 +60,6 @@ class SchemaConfig
             'logo' => (string) ($site['logoDark'] ?? $site['logoLight'] ?? ''),
             'hours' => self::companyHours($company['openingHours'] ?? null),
             'address' => self::companyAddress($company['location'] ?? null),
-            'geo' => self::companyGeo($company['location'] ?? null),
             'sameAs' => $profileLinks,
         ];
     }
@@ -76,13 +75,50 @@ class SchemaConfig
         return ['street' => $fields['street'], 'locality' => $fields['locality'], 'region' => $fields['region'], 'postcode' => $fields['postcode'], 'country' => $country];
     }
 
-    /** Coordinates typed on Company > Location, or [] unless both are numbers. */
-    public static function companyGeo(mixed $saved): array
+    /**
+     * The postcode of the company's address: the Location field, or (older sites with only the one-line address)
+     * picked out of that.
+     */
+    public static function companyPostcode(mixed $location, string $oneLineAddress = ''): string
     {
-        $fields = self::companyLocation($saved);
-        $bothNumeric = \is_numeric($fields['latitude']) && \is_numeric($fields['longitude']);
+        $postcode = self::companyLocation($location)['postcode'];
+        if ($postcode !== '') return $postcode;
 
-        return $bothNumeric ? ['latitude' => $fields['latitude'], 'longitude' => $fields['longitude']] : [];
+        $found = \preg_match('/\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/i', $oneLineAddress, $match);
+        return $found ? $match[0] : '';
+    }
+
+    /**
+     * Coordinates for the output: the ones typed on this page, else the looked-up ones when they were found for the
+     * postcode the company has now (an old lookup for a changed postcode is ignored).
+     */
+    public static function withLookedUpGeo(array $config, array $company): array
+    {
+        $typed = self::numericPair((array) ($config['geo'] ?? []));
+        if ($typed) return $config;
+
+        $lookup = (array) ($config['geoLookup'] ?? []);
+        $postcode = self::companyPostcode($company['location'] ?? null, (string) ($company['address'] ?? ''));
+        $samePostcode = $postcode !== '' && self::samePostcode($postcode, (string) ($lookup['postcode'] ?? ''));
+        $found = $samePostcode ? self::numericPair($lookup) : [];
+        if ($found) $config['geo'] = $found;
+
+        return $config;
+    }
+
+    public static function samePostcode(string $a, string $b): bool
+    {
+        return \strtoupper(\preg_replace('/\s+/', '', $a)) === \strtoupper(\preg_replace('/\s+/', '', $b));
+    }
+
+    /** @return array{latitude: string, longitude: string}|array{} */
+    public static function numericPair(array $fields): array
+    {
+        $latitude = \trim((string) ($fields['latitude'] ?? ''));
+        $longitude = \trim((string) ($fields['longitude'] ?? ''));
+        $bothNumeric = \is_numeric($latitude) && \is_numeric($longitude);
+
+        return $bothNumeric ? ['latitude' => $latitude, 'longitude' => $longitude] : [];
     }
 
     /** @return array<string, string> */
@@ -92,7 +128,7 @@ class SchemaConfig
         $decoded = \is_array($decoded) ? $decoded : [];
 
         $fields = [];
-        foreach (['street', 'locality', 'region', 'postcode', 'country', 'latitude', 'longitude'] as $field) {
+        foreach (['street', 'locality', 'region', 'postcode', 'country'] as $field) {
             $fields[$field] = \trim((string) ($decoded[$field] ?? ''));
         }
 
@@ -119,7 +155,7 @@ class SchemaConfig
     }
 
     /** Fields the company's Location settings own: they replace whatever Schema holds whenever Location has a value. */
-    private const COMPANY_OWNED = ['hours', 'address', 'geo'];
+    private const COMPANY_OWNED = ['hours', 'address'];
 
     public static function withFallbacks(array $config, array $inherited): array
     {
@@ -150,6 +186,8 @@ class SchemaConfig
             'email' => '',
             'phone' => '',
             'priceRange' => '',
+            'geo' => [], // Typed on the Schema page; empty means the looked-up coordinates are used
+            'geoLookup' => [], // The postcode lookup's answer: postcode, latitude, longitude
             'sameAs' => [],
         ];
     }

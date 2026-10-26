@@ -7,6 +7,7 @@ namespace Osmium\Services\Schema\Controllers;
 use Osmium\Core\Library\ServiceLoader;
 use Osmium\Core\Models\ServiceModel;
 use Osmium\Modules\Admin\Core\AdminController;
+use Osmium\Services\Geocoder\Models\PostcodeGeocoder;
 use Osmium\Services\Schema\Models\SchemaBuilder;
 use Osmium\Services\Schema\Models\SchemaConfig;
 
@@ -25,6 +26,7 @@ class SchemaController extends AdminController
         $isPost = $_SERVER['REQUEST_METHOD'] === 'POST';
         if ($isPost) $this->handleSubmit();
 
+        $this->refreshLookup();
         $this->data['admin']['config']['schema'] = SchemaConfig::get();
         $this->data['admin']['inherited'] = $this->inheritedValues();
         $this->data['admin']['types'] = SchemaBuilder::TYPES;
@@ -80,8 +82,11 @@ class SchemaController extends AdminController
             'email' => $this->text('email'),
             'phone' => $this->text('phone'),
             'priceRange' => $this->text('price_range'),
+            'geo' => $this->readGeo(errors: $errors, current: $current['geo']),
+            'geoLookup' => $current['geoLookup'],
             'sameAs' => $this->readSameAs(errors: $errors),
         ];
+        $config['geoLookup'] = $this->lookup(config: $config, errors: $errors);
 
         $this->saveConfig($config);
 
@@ -92,6 +97,66 @@ class SchemaController extends AdminController
         $_SESSION['schema_settings_saved'] = true;
         if ($errors) $_SESSION['schema_settings_error'] = \implode(' ', $errors);
         $this->redirect('settings/schema/');
+    }
+
+    /**
+     * Typed coordinates (both or neither) override the lookup.
+     */
+    private function readGeo(array &$errors, array $current): array
+    {
+        $latitude = $this->text('latitude');
+        $longitude = $this->text('longitude');
+
+        $bothEmpty = $latitude === '' && $longitude === '';
+        if ($bothEmpty) return [];
+
+        $inRange = \is_numeric($latitude) && \is_numeric($longitude)
+            && \abs((float) $latitude) <= 90 && \abs((float) $longitude) <= 180;
+        if ($inRange) return ['latitude' => $latitude, 'longitude' => $longitude];
+
+        $errors[] = 'Latitude and longitude must both be numbers in range - kept the previous values.';
+        return $current;
+    }
+
+    /**
+     * Looks the company postcode up (Postcode Geocoder service) when no coordinates are typed and the answer kept
+     * for it is missing or for a different postcode. Returns the lookup to keep.
+     */
+    private function lookup(array $config, array &$errors): array
+    {
+        $kept = (array) ($config['geoLookup'] ?? []);
+        $typed = SchemaConfig::numericPair((array) $config['geo']);
+        if ($typed) return $kept;
+
+        $company = (array) ($this->osmium->config->company ?? []);
+        $postcode = SchemaConfig::companyPostcode($company['location'] ?? null, (string) ($company['address'] ?? ''));
+        $noPostcode = $postcode === '';
+        if ($noPostcode) return [];
+
+        $upToDate = SchemaConfig::samePostcode($postcode, (string) ($kept['postcode'] ?? '')) && SchemaConfig::numericPair($kept);
+        if ($upToDate) return $kept;
+
+        $found = (new PostcodeGeocoder())->geocode($postcode);
+        if ($found) return ['postcode' => $postcode, 'latitude' => (string) $found['latitude'], 'longitude' => (string) $found['longitude']];
+
+        $errors[] = "Could not look up coordinates for \"{$postcode}\" - type latitude and longitude by hand.";
+        return [];
+    }
+
+    /** Keeps the lookup in step with the company postcode whenever the page is opened (Location may have changed). */
+    private function refreshLookup(): void
+    {
+        $config = SchemaConfig::get();
+        $errors = [];
+        $lookup = $this->lookup(config: $config, errors: $errors);
+        if ($errors) $_SESSION['schema_settings_error'] = \implode(' ', $errors);
+
+        $changed = $lookup !== (array) $config['geoLookup'];
+        if (!$changed) return;
+
+        $config['geoLookup'] = $lookup;
+        $this->saveConfig($config);
+        SchemaConfig::clearCache();
     }
 
     private function text(string $field): string
