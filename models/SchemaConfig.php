@@ -177,7 +177,7 @@ class SchemaConfig
     public static function defaults(): array
     {
         return [
-            'type' => 'Organization',
+            'type' => 'LocalBusiness',
             'name' => '',
             'legalName' => '',
             'url' => '',

@@ -43,7 +43,7 @@ class SchemaBuilder
 
     private static function organisation(array $config, string $name, string $baseUrl): array
     {
-        $type = \in_array($config['type'], self::TYPES, true) ? $config['type'] : 'Organization';
+        $type = \in_array($config['type'], self::TYPES, true) ? $config['type'] : 'LocalBusiness';
         $isLocal = $type !== 'Organization';
 
         $node = ['@type' => $type, '@id' => $baseUrl . '/#organization', 'name' => $name, 'url' => $baseUrl . '/'];
