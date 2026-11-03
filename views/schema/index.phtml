@@ -74,7 +74,7 @@
             <div class="card mb-4">
                 <div class="card-header"><h5 class="mb-0"><i class="bx bx-map me-2"></i>Address and location</h5></div>
                 <div class="card-body">
-                    <?php $address = $admin['inherited']['address']; $geo = $admin['inherited']['geo']; ?>
+                    <?php $address = $admin['inherited']['address']; ?>
                     <p class="mb-2">The address comes from <a href="<?= $adminUrl('settings/location/') ?>">Company &gt; Location</a>.</p>
                     <?php if ($address): ?>
                         <p class="mb-2 text-muted"><?= $e(\implode(', ', \array_filter([$address['street'], $address['locality'], $address['region'], $address['postcode'], $address['country']]))) ?></p>
