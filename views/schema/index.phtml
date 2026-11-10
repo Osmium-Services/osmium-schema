@@ -24,8 +24,8 @@
 
 <form method="POST" action="<?= $admin['basePath'] ?>settings/schema/" id="settings-form">
     <input type="hidden" name="token" value="<?= $template['formToken'] ?? '' ?>">
-    <div class="row">
-        <div class="col-lg-6">
+    <div class="row justify-content-center">
+        <div class="col-lg-4">
             <div class="card mb-4">
                 <div class="card-header"><h5 class="mb-0"><i class="bx bx-building me-2"></i>Organisation</h5></div>
                 <div class="card-body">
@@ -68,13 +68,18 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0"><i class="bx bx-time me-2"></i>Opening hours</h5></div>
+                <div class="card-body">
+                    <p class="mb-0">Opening hours come from <a href="<?= $adminUrl('settings/location/') ?>">Company &gt; Location</a> and are added automatically for the LocalBusiness types.</p>
+                </div>
+            </div>
+
             <div class="card mb-4">
                 <div class="card-header"><h5 class="mb-0"><i class="bx bx-map me-2"></i>Address and location</h5></div>
                 <div class="card-body">
-                    <?php $address = $admin['inherited']['address']; ?>
+                    <?php $address = $admin['inherited']['address']; $geo = $admin['inherited']['geo']; ?>
                     <p class="mb-2">The address comes from <a href="<?= $adminUrl('settings/location/') ?>">Company &gt; Location</a>.</p>
                     <?php if ($address): ?>
                         <p class="mb-2 text-muted"><?= $e(\implode(', ', \array_filter([$address['street'], $address['locality'], $address['region'], $address['postcode'], $address['country']]))) ?></p>
@@ -113,13 +118,6 @@
                         <textarea class="form-control" id="same_as" name="same_as" rows="4" placeholder="<?= $e(\implode("\n", $admin['inherited']['sameAs'])) ?>"><?= $e(\implode("\n", $c['sameAs'])) ?></textarea>
                         <div class="form-text">One full URL per line (Facebook, LinkedIn, Companies House and so on). Empty uses the Social Links service when it is installed (shown in grey).</div>
                     </div>
-                </div>
-            </div>
-
-            <div class="card mb-4">
-                <div class="card-header"><h5 class="mb-0"><i class="bx bx-time me-2"></i>Opening hours</h5></div>
-                <div class="card-body">
-                    <p class="mb-0">Opening hours come from <a href="<?= $adminUrl('settings/location/') ?>">Company &gt; Location</a> and are added automatically for the LocalBusiness types.</p>
                 </div>
             </div>
         </div>
