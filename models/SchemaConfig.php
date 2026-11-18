@@ -42,10 +42,10 @@ class SchemaConfig
 
     /**
      * What the site already knows, used wherever Schema's own field is empty: the site name, the
-     * Branding company phone and email, the company's Location opening hours, and the uploaded logo. A value typed into Schema always wins.
+     * Branding company legal name, phone and email, the company's Location opening hours, and the uploaded logo. A value typed into Schema always wins.
      *
      * @param array $site  the theme's $site (name, logoDark, logoLight)
-     * @param array $company  Branding's company details (phone, email)
+     * @param array $company  Branding's company details (legalName, phone, email)
      * @param array $socialLinks  the Social Links service's config as core passes it to theme blocks (empty when
      *   that service is not installed): ['links' => network => URL]
      */
@@ -55,6 +55,7 @@ class SchemaConfig
 
         return [
             'name' => \trim((string) ($site['name'] ?? '')),
+            'legalName' => \trim((string) ($company['legalName'] ?? '')),
             'phone' => \trim((string) ($company['phone'] ?? '')),
             'email' => \trim((string) ($company['email'] ?? '')),
             'logo' => (string) ($site['logoDark'] ?? $site['logoLight'] ?? ''),
