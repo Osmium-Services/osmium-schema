@@ -47,7 +47,7 @@ class SchemaController extends AdminController
         $logoFile = $logos['dark'] ?? $logos['light'] ?? null;
 
         $site = ['name' => $this->osmium->config->site->name, 'logoDark' => $logoFile ? $logoUrl . $logoFile : ''];
-        $company = (array) ($this->osmium->config->company ?? []);
+        $company = $this->osmium->company();
 
         $context = (new ServiceLoader(new ServiceModel($this->osmium->dataSource)))->serviceConfigContext();
 
@@ -128,7 +128,7 @@ class SchemaController extends AdminController
         $typed = SchemaConfig::numericPair((array) $config['geo']);
         if ($typed) return $kept;
 
-        $company = (array) ($this->osmium->config->company ?? []);
+        $company = $this->osmium->company();
         $postcode = SchemaConfig::companyPostcode($company['location'] ?? null, (string) ($company['address'] ?? ''));
         $noPostcode = $postcode === '';
         if ($noPostcode) return [];
