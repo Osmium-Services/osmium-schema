@@ -1,6 +1,7 @@
 ---
 title: Set up structured data for search engines
 tags: schema, structured data, json-ld, seo, local business, organisation, rich results, google
+page: admin/settings/schema
 ---
 
 **Osmium Schema** tells search engines who you are, in a form they can read. It describes your business, and can help your listing show address, opening hours and contact details.
